@@ -1,0 +1,15 @@
+{
+  "name": "node-grpc-mock",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ivan Antonov <ivan@antonov.site>",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.7.3",
+    "google-protobuf": "^3.21.2"
+  }
+}

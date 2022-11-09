@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package ru.rv.jmssellerapp.protobuf;
+
+import "google/protobuf/empty.proto";
+
+option java_multiple_files = true;
+option go_package = "generated/";
+
+service EchoService {
+  rpc SayHello(EchoRequest) returns (EchoResponse);
+  rpc SayHelloRetail(google.protobuf.Empty) returns (EchoResponse);
+  rpc SayHelloDelivery(google.protobuf.Empty) returns (EchoResponse);
+  rpc SayHelloManager(google.protobuf.Empty) returns (EchoResponse);
+}
+
+message EchoRequest {
+  string name = 1;
+}
+
+message EchoResponse {
+  string message = 1;
+}

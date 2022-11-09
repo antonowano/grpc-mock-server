@@ -1,0 +1,34 @@
+{
+  "proto": "echo",
+  "name": "EchoService",
+  "methods": {
+
+    "SayHello": {
+      "request": {
+        "proto": "echo",
+        "name": "EchoRequest"
+      },
+      "response": {
+        "proto": "echo",
+        "name": "EchoResponse"
+      },
+      "dataset": [
+        {
+          "request": {},
+          "response": {
+            "message": "Hello, World!"
+          }
+        },
+        {
+          "request": {
+            "name": "Ivan"
+          },
+          "response": {
+            "message": "Hello, Ivan!"
+          }
+        }
+      ]
+    }
+
+  }
+}
