@@ -6,8 +6,7 @@ const pb = {};
 const stubs = [];
 
 readdirSync(join(__dirname, 'generated')).forEach(function(file) {
-    const name = file.match(/^(.+)_pb.js$/i)[1];
-    pb[name] = require('./generated/' + file);
+    Object.assign(pb, require('./generated/' + file));
 });
 
 readdirSync(join(__dirname, 'stubs')).forEach(function(file) {
@@ -27,7 +26,7 @@ function callMethod(method) {
 function main() {
     const server = new grpc.Server();
     for (let service of stubs) {
-        const serviceDefinition = pb[service.proto + '_grpc'][service.name + 'Service'];
+        const serviceDefinition = pb[service.name + 'Service'];
         const methods = {};
         for (let methodName in service.methods) {
             methods[methodName] = callMethod(service.methods[methodName]);

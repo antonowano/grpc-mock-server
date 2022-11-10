@@ -1,7 +1,6 @@
 const pb = require('../generated/echo_pb');
 
 const data = {
-    proto: 'echo',
     name: 'EchoService',
     methods: {
         sayHello: [
