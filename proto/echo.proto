@@ -21,3 +21,10 @@ message EchoRequest {
 message EchoResponse {
   string message = 1;
 }
+
+message TestMessage {
+  string one = 1;
+  string two = 2;
+  int32 three = 3;
+  string four = 4;
+}
