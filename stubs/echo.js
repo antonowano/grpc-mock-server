@@ -1,45 +1,43 @@
-const pb = require('../generated/echo_pb');
+const proto = 'echo';
+const service = 'EchoService';
 
-const data = {
-    name: 'EchoService',
+const grpc = require('@grpc/grpc-js');
+const messages = require('../generated/' + proto + '_pb');
+const services = require('../generated/' + proto + '_grpc_pb');
+
+exports.data = {
+    service: services[service + 'Service'],
     methods: {
         sayHello: [
             {
-                request: () => {
-                    const message = new pb.EchoRequest();
-                    message.setName('Ivan');
-                    return message;
+                request: {
+                    '@type': messages.EchoRequest,
+                    name: 'Ivan'
                 },
-                response: () => {
-                    const message = new pb.EchoResponse();
-                    message.setMessage('Hello, Ivan!');
-                    return message;
+                response: {
+                    '@type': messages.EchoResponse,
+                    message: 'Hello Ivan!'
                 }
             },
             {
-                request: () => {
-                    const message = new pb.EchoRequest();
-                    message.setName('Vasya');
-                    return message;
+                request: {
+                    '@type': messages.EchoRequest,
+                    name: 'Vasya'
                 },
-                response: () => {
-                    const message = new pb.EchoResponse();
-                    message.setMessage('Hello, Vasya!');
-                    return message;
+                responseError: {
+                    code: grpc.status.PERMISSION_DENIED,
+                    message: 'who you are?'
                 }
             },
             {
-                request: () => {
-                    return new pb.EchoRequest();
+                request: {
+                    '@type': messages.EchoRequest
                 },
-                response: () => {
-                    const message = new pb.EchoResponse();
-                    message.setMessage('Hello, World!');
-                    return message;
+                response: {
+                    '@type': messages.EchoResponse,
+                    message: 'Hello, World!'
                 }
-            }
+            },
         ]
     }
 };
-
-exports.data = data;

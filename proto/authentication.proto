@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package ru.rv.jmssellerapp.protobuf;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option go_package = "generated/";
+
+service AuthenticationService {
+  // Проверка актуальности токена.
+  // Токен нужно передовать в `Authentication` заголовке, как `Bearer` токен.
+  // Если при выполнении метода нет ошибок, тогда токен считается валидным.
+  //
+  // Список возможных ошибок:
+  //     * `Status.UNAUTHENTICATED` - если не передан токен, он невалидный или истекший.
+  //     * `Status.PERMISSION_DENIED` - если пользователь не имеет роли `Retail`.
+  rpc ValidateToken(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // Авторизация продавца / директора магазина / мобильного продавца.
+  //
+  // Список возможных ошибок:
+  //     * `Status.UNAUTHENTICATED` - если передан невалидный токен (здесь его передавать не нужно).
+  //     * `Status.UNAUTHENTICATED` - если бейдж или пароль указаны неверно.
+  //     * `Status.INVALID_ARGUMENT` - неправильно заполнена форма авторизации. Содержит BadRequest.
+  //     * `Status.PERMISSION_DENIED` - если пользователь не имеет роли `Retail` или не отсканирован в магазине.
+  rpc AuthenticateUser(AuthenticationUserRequest) returns (AuthenticationUserResponse);
+
+  // Сброс пароля.
+  // Список возможных ошибок:
+  //     * `Status.UNAUTHENTICATED` - если передан невалидный токен (здесь его передавать не нужно).
+  //     * `Status.INVALID_ARGUMENT` - неправильно заполнена форма. Содержит BadRequest.
+  //     * `Status.NOT_FOUND` - пользователь не найден.
+  //     * `Status.PERMISSION_DENIED` - пользователь заблокирован.
+  //     * `Status.INTERNAL` - внутренняя ошибка создания нового пароль.
+  rpc RestorePassword(PasswordRecoveryRequest) returns (google.protobuf.Empty);
+}
+
+message AuthenticationUserRequest {
+  string badge = 1;
+  string password = 2;
+}
+
+message AuthenticationUserResponse {
+  AccessToken token = 1;
+  AuthenticatedUser user = 2;
+}
+
+message AccessToken {
+  string hash = 1;
+  google.protobuf.Timestamp date_creation = 2;
+}
+
+message AuthenticatedUser {
+  string name = 1;
+  string surname = 2;
+  string badge = 3;
+
+  enum Role {
+    MANAGER = 0;
+    SELLER = 1;
+    DELIVERY = 2;
+  }
+
+  Role role = 4;
+}
+
+message PasswordRecoveryRequest {
+  string badge = 1;
+}

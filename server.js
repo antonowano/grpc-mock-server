@@ -1,23 +1,44 @@
 const grpc = require('@grpc/grpc-js');
-const { join } = require('path');
 const { readdirSync } = require('fs');
 
-const pb = {};
-const stubs = [];
+function setter(fieldName) {
+    const camelFieldName = fieldName.toLowerCase().replace(/([-_][a-z])/g, group =>
+        group
+            .toUpperCase()
+            .replace('-', '')
+            .replace('_', '')
+    );
+    return 'set' + camelFieldName.substring(0, 1).toUpperCase() + camelFieldName.substring(1);
+}
 
-readdirSync(join(__dirname, 'generated')).forEach(function(file) {
-    Object.assign(pb, require('./generated/' + file));
-});
-
-readdirSync(join(__dirname, 'stubs')).forEach(function(file) {
-    stubs.push(require('./stubs/' + file).data);
-});
+function createMessageFromObject(obj) {
+    const message = new obj['@type']();
+    for (let field in obj) {
+        if (field === '@type') continue;
+        if (Array.isArray(obj[field]) && obj[field].length > 0) {
+            const val = [];
+            for (let value of obj[field]) {
+                val.push(createMessageFromObject(value));
+            }
+            message[setter(field)](val);
+        } else if (typeof obj[field] === 'object' && obj[field] !== null) {
+            message[setter(field)](createMessageFromObject(obj[field]));
+        } else if (obj[field] !== null) {
+            message[setter(field)](obj[field]);
+        }
+    }
+    return message;
+}
 
 function callMethod(method) {
     return (call, callback) => {
-        for (let data of method) {
-            if (data.request().serializeBinary().toString() === call.request.serializeBinary().toString()) {
-                callback(null, data.response());
+        for (let set of method) {
+            const request = createMessageFromObject(set.request);
+            // const auth = call.metadata.internalRepr.get('authorization');
+            if (request.serializeBinary().toString() === call.request.serializeBinary().toString()) {
+                const error = set.responseError || null;
+                const response = set.response ? createMessageFromObject(set.response) : null;
+                callback(error, response);
             }
         }
     };
@@ -25,14 +46,14 @@ function callMethod(method) {
 
 function main() {
     const server = new grpc.Server();
-    for (let service of stubs) {
-        const serviceDefinition = pb[service.name + 'Service'];
+    readdirSync('./stubs').forEach(function(file) {
+        const service = require('./stubs/' + file).data;
         const methods = {};
         for (let methodName in service.methods) {
             methods[methodName] = callMethod(service.methods[methodName]);
         }
-        server.addService(serviceDefinition, methods);
-    }
+        server.addService(service.service, methods);
+    });
     server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
         server.start();
     });
