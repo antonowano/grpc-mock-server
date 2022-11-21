@@ -14,13 +14,13 @@ function setter(fieldName) {
 function createMessageFromObject(obj) {
     const message = new obj['@type']();
     for (let field in obj) {
-        if (field === '@type') continue;
+        if (field.startsWith('@')) continue;
         if (Array.isArray(obj[field]) && obj[field].length > 0) {
             const val = [];
             for (let value of obj[field]) {
                 val.push(createMessageFromObject(value));
             }
-            message[setter(field)](val);
+            message[setter(field) + 'List'](val);
         } else if (typeof obj[field] === 'object' && obj[field] !== null) {
             message[setter(field)](createMessageFromObject(obj[field]));
         } else if (obj[field] !== null) {
@@ -32,13 +32,24 @@ function createMessageFromObject(obj) {
 
 function callMethod(method) {
     return (call, callback) => {
+        const realRequest = call.request.serializeBinary().toString();
+        let realAuthorization = call.metadata.internalRepr.get('authorization');
+        realAuthorization = realAuthorization ? realAuthorization.toString() : undefined;
         for (let set of method) {
-            const request = createMessageFromObject(set.request);
-            // const auth = call.metadata.internalRepr.get('authorization');
-            if (request.serializeBinary().toString() === call.request.serializeBinary().toString()) {
+            const expectedRequest = createMessageFromObject(set.request).serializeBinary().toString();
+            const expectedAuthorization = set.request['@auth'];
+            if (expectedRequest === realRequest && expectedAuthorization === realAuthorization) {
                 const error = set.responseError || null;
                 const response = set.response ? createMessageFromObject(set.response) : null;
-                callback(error, response);
+                const trailers = new grpc.Metadata();
+                for (let key in set.metadata) {
+                    if (key.endsWith('-bin')) {
+                        trailers.add(key, Buffer.from(createMessageFromObject(set.metadata[key]).serializeBinary()));
+                    } else {
+                        trailers.add(key, set.metadata[key]);
+                    }
+                }
+                callback(error, response, trailers);
             }
         }
     };

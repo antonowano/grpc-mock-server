@@ -12,4 +12,8 @@ RUN grpc_tools_node_protoc --proto_path=proto \
     --grpc_out=grpc_js:generated/ \
     proto/*.proto
 
+RUN grpc_tools_node_protoc --proto_path=proto \
+    --js_out=import_style=commonjs,binary:generated/ \
+    proto/**/*.proto
+
 CMD ["node", "./server.js"]
