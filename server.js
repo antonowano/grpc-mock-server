@@ -37,8 +37,12 @@ function callMethod(method) {
         realAuthorization = realAuthorization ? realAuthorization.toString() : undefined;
         for (let set of method) {
             const expectedRequest = createMessageFromObject(set.request).serializeBinary().toString();
+            const isMatchingRequest = expectedRequest === realRequest;
             const expectedAuthorization = set.request['@auth'];
-            if (expectedRequest === realRequest && expectedAuthorization === realAuthorization) {
+            const isMatchingAuthorization = Array.isArray(expectedAuthorization)
+                ? expectedAuthorization.indexOf(realAuthorization) !== -1
+                : (expectedAuthorization === realAuthorization);
+            if (isMatchingRequest && isMatchingAuthorization) {
                 const error = set.responseError || null;
                 const response = set.response ? createMessageFromObject(set.response) : null;
                 const trailers = new grpc.Metadata();
