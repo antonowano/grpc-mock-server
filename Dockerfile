@@ -1,6 +1,7 @@
 FROM node
 
 RUN npm install -g grpc-tools
+RUN npm install
 
 WORKDIR /app
 
