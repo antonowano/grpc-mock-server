@@ -1,11 +1,12 @@
 FROM node
 
 RUN npm install -g grpc-tools
-RUN npm install
 
 WORKDIR /app
 
 COPY . .
+RUN npm install
+
 RUN rm -rf generated/ && mkdir generated/
 
 RUN grpc_tools_node_protoc --proto_path=proto \
