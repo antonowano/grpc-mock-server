@@ -18,7 +18,7 @@ function createMessageFromObject(obj) {
         if (Array.isArray(obj[field]) && obj[field].length > 0) {
             const val = [];
             for (let value of obj[field]) {
-                val.push(createMessageFromObject(value));
+                val.push(typeof value === 'object' ? createMessageFromObject(value) : value);
             }
             message[setter(field) + 'List'](val);
         } else if (typeof obj[field] === 'object' && obj[field] !== null) {
@@ -64,6 +64,9 @@ function main() {
     readdirSync('./stubs').forEach(function(file) {
         const service = require('./stubs/' + file).data;
         const methods = {};
+        if (typeof service === 'undefined') {
+            return;
+        }
         for (let methodName in service.methods) {
             methods[methodName] = callMethod(service.methods[methodName]);
         }
