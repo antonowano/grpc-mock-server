@@ -9,14 +9,16 @@ const { Empty } = require('google-protobuf/google/protobuf/empty_pb');
 const { Timestamp } = require('google-protobuf/google/protobuf/timestamp_pb');
 const { BadRequest } = require('../generated/google/error_details_pb');
 
-exports.data = {
+exports.stub = {
     service: services[service + 'Service'],
     methods: {
         validateToken: [
             {
                 request: {
                     '@type': Empty,
-                    '@auth': 'Bearer 123'
+                    '@auth': [
+                        'Bearer retail41016',
+                    ],
                 },
                 response: {
                     '@type': Empty

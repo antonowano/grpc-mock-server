@@ -7,7 +7,7 @@ const services = require('../generated/' + proto + '_grpc_pb');
 
 const { Empty } = require('google-protobuf/google/protobuf/empty_pb');
 
-exports.data = {
+exports.stub = {
     service: services[service + 'Service'],
     methods: {
         sayHello: [
