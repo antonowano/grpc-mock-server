@@ -15,7 +15,7 @@ function createMessageFromObject(obj) {
     const message = new obj['@type']();
     for (let field in obj) {
         if (field.startsWith('@')) continue;
-        if (Array.isArray(obj[field]) && obj[field].length > 0) {
+        if (Array.isArray(obj[field])) {
             const val = [];
             for (let value of obj[field]) {
                 val.push(typeof value === 'object' ? createMessageFromObject(value) : value);
