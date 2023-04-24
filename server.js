@@ -2,7 +2,7 @@ const grpc = require('@grpc/grpc-js');
 const { readdirSync } = require('fs');
 
 function setter(fieldName) {
-    const camelFieldName = fieldName.toLowerCase().replace(/([-_][a-z])/g, group =>
+    const camelFieldName = fieldName.toLowerCase().replace(/([-_][a-z0-9])/g, group =>
         group
             .toUpperCase()
             .replace('-', '')
@@ -12,19 +12,28 @@ function setter(fieldName) {
 }
 
 function createMessageFromObject(obj) {
-    const message = new obj['@type']();
+    let message;
+    try {
+        message = new obj['@type']();
+    } catch(err) {
+        console.log(err, obj);
+    }
     for (let field in obj) {
         if (field.startsWith('@')) continue;
-        if (Array.isArray(obj[field])) {
-            const val = [];
-            for (let value of obj[field]) {
-                val.push(typeof value === 'object' ? createMessageFromObject(value) : value);
+        try {
+            if (Array.isArray(obj[field])) {
+                const val = [];
+                for (let value of obj[field]) {
+                    val.push(typeof value === 'object' ? createMessageFromObject(value) : value);
+                }
+                message[setter(field) + 'List'](val);
+            } else if (typeof obj[field] === 'object' && obj[field] !== null) {
+                message[setter(field)](createMessageFromObject(obj[field]));
+            } else if (obj[field] !== null) {
+                message[setter(field)](obj[field]);
             }
-            message[setter(field) + 'List'](val);
-        } else if (typeof obj[field] === 'object' && obj[field] !== null) {
-            message[setter(field)](createMessageFromObject(obj[field]));
-        } else if (obj[field] !== null) {
-            message[setter(field)](obj[field]);
+        } catch(err) {
+            console.log(err, obj);
         }
     }
     return message;
