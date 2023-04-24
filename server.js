@@ -71,7 +71,7 @@ function callMethod(method) {
 function main() {
     const server = new grpc.Server();
     readdirSync('./stubs').forEach(function(file) {
-        const service = require('./stubs/' + file).data;
+        const service = require('./stubs/' + file).stub;
         const methods = {};
         if (typeof service === 'undefined') {
             return;
